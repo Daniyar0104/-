@@ -1,4 +1,4 @@
-[friends-talk-wheel-prizes.html](https://github.com/user-attachments/files/26546124/friends-talk-wheel-prizes.html)
+[friends-talk-wheel-prizes (1).html](https://github.com/user-attachments/files/26546299/friends-talk-wheel-prizes.1.html)
 <!DOCTYPE html>
 <html lang="ru">
 <head>
