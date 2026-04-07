@@ -1,4 +1,4 @@
-[friends-talk-wheel-positive.html](https://github.com/user-attachments/files/26545420/friends-talk-wheel-positive.html)
+[friends-talk-wheel-result.html](https://github.com/user-attachments/files/26545997/friends-talk-wheel-result.html)
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#14110f; --surface:#1d1815; --border:rgba(222,199,169,.16); --text:#f4eadf; --faint:#9d8978; --gold:#d7b07a; --shadow:0 20px 60px rgba(0,0,0,.45); --font-display:'Cormorant Garamond',serif; --font-body:'Inter',sans-serif; }
+    :root { --bg:#14110f; --surface:#1d1815; --border:rgba(222,199,169,.16); --text:#f4eadf; --muted:#cdb9a3; --faint:#9d8978; --gold:#d7b07a; --shadow:0 20px 60px rgba(0,0,0,.45); --font-display:'Cormorant Garamond',serif; --font-body:'Inter',sans-serif; }
     *{box-sizing:border-box;margin:0;padding:0}
     body{min-height:100dvh;display:grid;place-items:center;padding:16px;background:radial-gradient(circle at 20% 20%, rgba(197,139,88,.12), transparent 35%),radial-gradient(circle at 80% 10%, rgba(255,240,220,.06), transparent 26%),#14110f;color:var(--text);font-family:var(--font-body)}
     .panel{width:min(100%,980px);background:linear-gradient(180deg,#1d1815 0%,#171210 100%);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:clamp(16px,3vw,32px)}
@@ -26,6 +26,15 @@
     .prize-list h2{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:12px;text-align:center}
     .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
     .chip{padding:.78rem 1rem;border-radius:999px;border:1px solid rgba(215,176,122,.18);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));color:var(--text);font-size:14px;text-align:center}
+    .overlay{position:fixed;inset:0;background:rgba(10,8,6,.72);backdrop-filter:blur(10px);display:none;place-items:center;padding:20px;z-index:40}
+    .overlay.open{display:grid}
+    .result-card{width:min(92vw,560px);border-radius:28px;border:1px solid var(--border);background:linear-gradient(180deg,#231c17 0%,#171210 100%);box-shadow:var(--shadow);padding:28px;text-align:center}
+    .result-card .mini{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+    .result-card h3{font-family:var(--font-display);font-size:clamp(2.2rem,5vw,4.4rem);line-height:.92;margin-bottom:14px}
+    .result-card p{font-size:16px;line-height:1.6;color:var(--muted);max-width:28ch;margin:0 auto 18px}
+    .gift-name{display:inline-block;padding:14px 18px;border-radius:999px;border:1px solid rgba(215,176,122,.24);background:rgba(215,176,122,.08);font-size:18px;font-weight:700;color:var(--text)}
+    .result-close{margin-top:22px;min-height:48px;border:none;border-radius:999px;padding:0 22px;background:rgba(255,255,255,.06);color:var(--text);cursor:pointer}
+    @media (max-width:640px){.result-card p{font-size:15px}.gift-name{font-size:16px}}
   </style>
 </head>
 <body>
@@ -41,6 +50,17 @@
       <div class="chips" id="chips"></div>
     </div>
   </main>
+
+  <div class="overlay" id="overlay">
+    <div class="result-card">
+      <div class="mini">Поздравляем</div>
+      <h3 id="resultTitle">Ваш подарок</h3>
+      <p id="resultText">Сегодня удача на вашей стороне — забирайте подарок от Friends Talk.</p>
+      <div class="gift-name" id="giftName">Лимонад бесплатно</div>
+      <div><button class="result-close" id="closeBtn">Закрыть</button></div>
+    </div>
+  </div>
+
   <script>
     const items = [
       { label:'Депозит 500 ₽', type:'win', color:'#8d5a33' },
@@ -66,6 +86,11 @@
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
     const spinBtn = document.getElementById('spinBtn');
+    const overlay = document.getElementById('overlay');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultText = document.getElementById('resultText');
+    const giftName = document.getElementById('giftName');
+    const closeBtn = document.getElementById('closeBtn');
     let rotation = -Math.PI / 2;
     let spinning = false;
     const seg = (Math.PI * 2) / items.length;
@@ -102,6 +127,18 @@
       return arr.length - 1;
     }
     function easeOutQuint(t) { return 1 - Math.pow(1 - t, 5); }
+    function showResult(item) {
+      if (item.type === 'win') {
+        resultTitle.textContent = 'Поздравляем!';
+        resultText.textContent = 'Сегодня удача на вашей стороне — ваш подарок уже определён.';
+        giftName.textContent = item.label;
+      } else {
+        resultTitle.textContent = 'Спасибо за игру';
+        resultText.textContent = 'В этот раз без подарка, но в Friends Talk удача любит возвращаться.';
+        giftName.textContent = item.label;
+      }
+      overlay.classList.add('open');
+    }
     function spin() {
       if (spinning) return;
       spinning = true; spinBtn.disabled = true;
@@ -118,11 +155,13 @@
         rotation = startRotation + (finalRotation - startRotation) * easeOutQuint(t);
         drawWheel();
         if (t < 1) requestAnimationFrame(frame);
-        else { rotation = finalRotation % (Math.PI * 2); drawWheel(); spinning = false; spinBtn.disabled = false; }
+        else { rotation = finalRotation % (Math.PI * 2); drawWheel(); spinning = false; spinBtn.disabled = false; showResult(items[target]); }
       }
       requestAnimationFrame(frame);
     }
     spinBtn.addEventListener('click', spin);
+    closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
     drawWheel();
   </script>
 </body>
