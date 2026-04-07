@@ -1,4 +1,4 @@
-[friends-talk-wheel-result.html](https://github.com/user-attachments/files/26545997/friends-talk-wheel-result.html)
+[friends-talk-wheel-prizes.html](https://github.com/user-attachments/files/26546124/friends-talk-wheel-prizes.html)
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -31,10 +31,9 @@
     .result-card{width:min(92vw,560px);border-radius:28px;border:1px solid var(--border);background:linear-gradient(180deg,#231c17 0%,#171210 100%);box-shadow:var(--shadow);padding:28px;text-align:center}
     .result-card .mini{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
     .result-card h3{font-family:var(--font-display);font-size:clamp(2.2rem,5vw,4.4rem);line-height:.92;margin-bottom:14px}
-    .result-card p{font-size:16px;line-height:1.6;color:var(--muted);max-width:28ch;margin:0 auto 18px}
+    .result-card p{font-size:16px;line-height:1.6;color:var(--muted);max-width:30ch;margin:0 auto 18px}
     .gift-name{display:inline-block;padding:14px 18px;border-radius:999px;border:1px solid rgba(215,176,122,.24);background:rgba(215,176,122,.08);font-size:18px;font-weight:700;color:var(--text)}
     .result-close{margin-top:22px;min-height:48px;border:none;border-radius:999px;padding:0 22px;background:rgba(255,255,255,.06);color:var(--text);cursor:pointer}
-    @media (max-width:640px){.result-card p{font-size:15px}.gift-name{font-size:16px}}
   </style>
 </head>
 <body>
@@ -55,29 +54,31 @@
     <div class="result-card">
       <div class="mini">Поздравляем</div>
       <h3 id="resultTitle">Ваш подарок</h3>
-      <p id="resultText">Сегодня удача на вашей стороне — забирайте подарок от Friends Talk.</p>
+      <p id="resultText">Сегодня удача на вашей стороне — забирайте свой подарок от Friends Talk.</p>
       <div class="gift-name" id="giftName">Лимонад бесплатно</div>
       <div><button class="result-close" id="closeBtn">Закрыть</button></div>
     </div>
   </div>
 
   <script>
-    const items = [
-      { label:'Депозит 500 ₽', type:'win', color:'#8d5a33' },
-      { label:'Лимонад бесплатно', type:'win', color:'#c08a52' },
-      { label:'Десерт в подарок', type:'win', color:'#6c4a30' },
-      { label:'Кальян в подарок', type:'win', color:'#d4a36e' },
-      { label:'Второй кальян в подарок', type:'win', color:'#7b5230' },
-      { label:'Звёзды сегодня молчат', type:'lose', color:'#2f2621' },
-      { label:'Фортуна дремлет', type:'lose', color:'#352a24' },
-      { label:'Почти поймали удачу', type:'lose', color:'#3a2c25' },
-      { label:'Повезёт в следующий раз', type:'lose', color:'#332822' },
-      { label:'Следующий ход будет сильнее', type:'lose', color:'#2b221d' }
+    const prizeItems = [
+      { label:'Второй кальян в подарок', color:'#7b5230', congrats:'Поздравляем! Вам выпал второй кальян в подарок.' },
+      { label:'Кальян в подарок', color:'#d4a36e', congrats:'Поздравляем! Вам выпал кальян в подарок.' },
+      { label:'Депозит 500 ₽', color:'#8d5a33', congrats:'Поздравляем! Вам выпал депозит 500 ₽.' },
+      { label:'Десерт в подарок', color:'#6c4a30', congrats:'Поздравляем! Вам выпал десерт в подарок.' },
+      { label:'Лимонад бесплатно', color:'#c08a52', congrats:'Поздравляем! Вам выпал лимонад бесплатно.' }
     ];
-    const positiveItems = items.filter(i => i.type === 'win');
+    const fillerItems = [
+      { label:'Звёзды сегодня молчат', color:'#2f2621' },
+      { label:'Фортуна дремлет', color:'#352a24' },
+      { label:'Почти поймали удачу', color:'#3a2c25' },
+      { label:'Повезёт в следующий раз', color:'#332822' },
+      { label:'Следующий ход будет сильнее', color:'#2b221d' }
+    ];
+    const items = [...prizeItems, ...fillerItems];
     const weights = [5,5,5,5,5,15,15,15,15,15];
     const chips = document.getElementById('chips');
-    positiveItems.forEach(item => {
+    prizeItems.forEach(item => {
       const el = document.createElement('div');
       el.className = 'chip';
       el.textContent = item.label;
@@ -114,7 +115,7 @@
         ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,radius,start,end); ctx.closePath(); ctx.fillStyle = items[i].color; ctx.fill();
         ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(244,234,223,.18)'; ctx.stroke();
         ctx.save(); ctx.rotate(start + seg / 2); ctx.translate(radius * 0.67, 0); ctx.rotate(Math.PI / 2);
-        ctx.fillStyle = '#efe0d0'; ctx.font = (items[i].type === 'win' ? '700' : '600') + ' 44px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#efe0d0'; ctx.font = (i < prizeItems.length ? '700' : '600') + ' 44px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         wrapText(items[i].label, 0, 0, 220, 48); ctx.restore();
       }
       ctx.beginPath(); ctx.arc(0,0,radius + 18,0,Math.PI*2); ctx.lineWidth = 26; ctx.strokeStyle = 'rgba(215,176,122,.9)'; ctx.stroke();
@@ -128,14 +129,14 @@
     }
     function easeOutQuint(t) { return 1 - Math.pow(1 - t, 5); }
     function showResult(item) {
-      if (item.type === 'win') {
+      if (prizeItems.some(p => p.label === item.label)) {
         resultTitle.textContent = 'Поздравляем!';
-        resultText.textContent = 'Сегодня удача на вашей стороне — ваш подарок уже определён.';
+        resultText.textContent = item.congrats;
         giftName.textContent = item.label;
       } else {
         resultTitle.textContent = 'Спасибо за игру';
-        resultText.textContent = 'В этот раз без подарка, но в Friends Talk удача любит возвращаться.';
-        giftName.textContent = item.label;
+        resultText.textContent = 'Сегодня без подарка, но удача может улыбнуться вам уже в следующий раз.';
+        giftName.textContent = 'Попробуйте ещё раз';
       }
       overlay.classList.add('open');
     }
