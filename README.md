@@ -1,4 +1,4 @@
-[friends-talk-wheel-prizes (1).html](https://github.com/user-attachments/files/26546299/friends-talk-wheel-prizes.1.html)
+[friends-talk-wheel-prizes-fixed.html](https://github.com/user-attachments/files/27053730/friends-talk-wheel-prizes-fixed.html)
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -95,6 +95,7 @@
     let rotation = -Math.PI / 2;
     let spinning = false;
     const seg = (Math.PI * 2) / items.length;
+
     function wrapText(text, x, y, maxWidth, lineHeight) {
       const words = text.split(' '); let line = ''; const lines = [];
       for (let n = 0; n < words.length; n++) {
@@ -106,6 +107,7 @@
       const offset = ((lines.length - 1) * lineHeight) / 2;
       lines.forEach((l, i) => ctx.fillText(l, x, y - offset + i * lineHeight));
     }
+
     function drawWheel() {
       const cx = canvas.width / 2, cy = canvas.height / 2, radius = 530;
       ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -122,12 +124,24 @@
       ctx.beginPath(); ctx.arc(0,0,radius + 34,0,Math.PI*2); ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255,244,228,.14)'; ctx.stroke();
       ctx.restore();
     }
+
     function weightedIndex(arr) {
       const total = arr.reduce((a,b) => a + b, 0); let r = Math.random() * total;
       for (let i = 0; i < arr.length; i++) { if (r < arr[i]) return i; r -= arr[i]; }
       return arr.length - 1;
     }
+
     function easeOutQuint(t) { return 1 - Math.pow(1 - t, 5); }
+
+    function normalizeAngle(angle) {
+      return (angle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+    }
+
+    function getWinningIndex() {
+      const pointerAngle = normalizeAngle(-Math.PI / 2 - rotation);
+      return Math.floor(pointerAngle / seg) % items.length;
+    }
+
     function showResult(item) {
       if (prizeItems.some(p => p.label === item.label)) {
         resultTitle.textContent = 'Поздравляем!';
@@ -140,26 +154,41 @@
       }
       overlay.classList.add('open');
     }
+
     function spin() {
       if (spinning) return;
       spinning = true; spinBtn.disabled = true;
+
       const target = weightedIndex(weights);
       const centerAngle = target * seg + seg / 2;
-      const desired = -Math.PI / 2 - centerAngle;
-      const extra = Math.PI * 2 * (5 + Math.random() * 2);
+      const targetRotation = -Math.PI / 2 - centerAngle;
+      const extraTurns = Math.PI * 2 * (5 + Math.random() * 2);
       const startRotation = rotation;
-      const finalRotation = startRotation + extra + ((desired - startRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      const currentNormalized = normalizeAngle(startRotation);
+      const targetNormalized = normalizeAngle(targetRotation);
+      const delta = ((targetNormalized - currentNormalized) + Math.PI * 2) % (Math.PI * 2);
+      const finalRotation = startRotation + extraTurns + delta;
       const duration = 5200 + Math.random() * 1200;
       const start = performance.now();
+
       function frame(now) {
         const t = Math.min((now - start) / duration, 1);
         rotation = startRotation + (finalRotation - startRotation) * easeOutQuint(t);
         drawWheel();
-        if (t < 1) requestAnimationFrame(frame);
-        else { rotation = finalRotation % (Math.PI * 2); drawWheel(); spinning = false; spinBtn.disabled = false; showResult(items[target]); }
+        if (t < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          rotation = normalizeAngle(finalRotation);
+          drawWheel();
+          spinning = false;
+          spinBtn.disabled = false;
+          const actualIndex = getWinningIndex();
+          showResult(items[actualIndex]);
+        }
       }
       requestAnimationFrame(frame);
     }
+
     spinBtn.addEventListener('click', spin);
     closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
